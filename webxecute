@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# skip # comments and empty lines
+temp_file="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
+sanitized=`cat endpoints | grep -vE "^#" | grep . > $temp_file`
+selected=`cat $temp_file | cut -d "|" -f1 | fzf`
+
+if [[ -z $selected ]]; then
+    exit 0
+fi
+
+url=`cat endpoints | grep $selected | cut -d "|" -f2`
+
+xdg-open $url 2>&1 > /dev/null &
