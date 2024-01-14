@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
-# skip # comments and empty lines
-temp_file="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
-sanitized=`cat endpoints | grep -vE "^#" | grep . > $temp_file`
-selected=`cat $temp_file | cut -d "|" -f1 | fzf`
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT")
+CONFIGFILE=${SCRIPTPATH}/endpoints
 
-if [[ -z $selected ]]; then
+# skip # comments and empty lines
+TEMPFILE="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
+SANITIZED=`cat $CONFIGFILE | grep -vE "^#" | grep . > $TEMPFILE`
+SELECTED=`cat $TEMPFILE | cut -d "|" -f1 | fzf`
+
+if [[ -z $SELECTED ]]; then
     exit 0
 fi
 
-url=`cat endpoints | grep $selected | cut -d "|" -f2`
+URL=`cat $CONFIGFILE | grep $SELECTED | cut -d "|" -f2`
 
-xdg-open $url 2>&1 > /dev/null &
+xdg-open $URL 2>&1 > /dev/null &
