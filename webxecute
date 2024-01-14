@@ -6,13 +6,29 @@ CONFIGFILE=${SCRIPTPATH}/endpoints
 
 # skip # comments and empty lines
 TEMPFILE="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
-SANITIZED=`cat $CONFIGFILE | grep -vE "^#" | grep . > $TEMPFILE`
-SELECTED=`cat $TEMPFILE | cut -d "|" -f1 | fzf`
+cat $CONFIGFILE | grep -vE "^#" | grep . > $TEMPFILE
+SANITIZED=`cat $TEMPFILE`
+SELECTED=`echo "$SANITIZED" | cut -d "|" -f1 | fzf`
 
 if [[ -z $SELECTED ]]; then
     exit 0
 fi
+RED='\033[0;31m'
+RESET='\033[0m'
+COLOREDCURLY=`printf "${RED}{}${RESET}"`
+URL=`echo "$SANITIZED" | grep -m 1 "^${SELECTED}|" | cut -d "|" -f2`
 
-URL=`cat $CONFIGFILE | grep $SELECTED | cut -d "|" -f2`
+while [[ $URL == *"{}"* ]]; do
 
+    # color the first matching {} in red and ask for parameter input.
+    COLOREDURL=`echo "$URL" | sed "0,/{}/s|{}|$COLOREDCURLY|"`
+    echo -e "$COLOREDURL" 
+    read -p "parameter: " PARAM
+
+    # replace first occurence of '{}' with $PARAM
+    SEDEXPR="0,/{}/s|{}|$PARAM|"
+    URL=`echo "$URL" | sed "$SEDEXPR"`
+done
+
+echo "OPENING $URL"
 xdg-open $URL 2>&1 > /dev/null &
