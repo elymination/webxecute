@@ -1,8 +1,0 @@
-# Syntax is 'name|url'
-# Syntax for parameterized url is url/{}/{}
-
-Google|https://www.google.com
-X|https://www.x.com
-Reddit|https://www.reddit.com
-GitHub|https://www.github.com
-GitHub/username/repo|https://www.github.com/{}/{}

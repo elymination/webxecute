@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
 
-SCRIPT=$(readlink -f "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-CONFIGFILE=${SCRIPTPATH}/endpoints
+CONFIGDIR="${HOME}/.config/webxecute"
+CONFIGFILE="${CONFIGDIR}/config"
+
+if  [ ! -d $CONFIGDIR ] || [ ! -f $CONFIGFILE ]; then
+    while true; do
+    read -p  "You do not have any config file. Do you want to generate the default one? [y/n]." yn
+    case $yn in
+        [Yy]* )
+            if [ ! -d $CONFIGDIG ]; then
+                mkdir $CONFIGDIR;
+            fi
+            touch $CONFIGFILE
+            echo "# Syntax is 'name|url'" >> $CONFIGFILE
+            echo "# Syntax for parameterized url is url/{}/{}" >> $CONFIGFILE
+            echo "" >> $CONFIGFILE
+            echo "github|https://www.github.com" >> $CONFIGFILE
+            echo "github/user/repo|https://www.github.com/{}/{}" >> $CONFIGFILE
+            echo "Config file generated: ${CONFIGFILE}"
+            exit;;
+        [Nn]* ) exit;;
+        * ) exit;;
+    esac
+    done
+fi
 
 # skip # comments and empty lines
 TEMPFILE="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
