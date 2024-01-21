@@ -26,8 +26,12 @@ if  [ ! -d $CONFIGDIR ] || [ ! -f $CONFIGFILE ]; then
 fi
 
 # for some reason newlines are trimmed if not using a file in shell scripts?!
-TEMPFILE="/tmp/webxecute_sanitized" 
+TEMPFILE="/tmp/webxecute_sanitized"
 TEMPSORTEDFILE="/tmp/webxecute_sorted"
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+RESET='\033[0m'
 
 # skip # comments and empty lines
 cat $CONFIGFILE | grep -vE "^#" | grep . > $TEMPFILE
@@ -39,25 +43,26 @@ fi
 
 touch $TEMPSORTEDFILE
 
-# sort by favorites first, with the leading * removed
-cat $TEMPFILE | grep -E "^\*" | cut -c 2- >> $TEMPSORTEDFILE
+# sort by favorites first, with the leading * removed and printed in yellow
+cat $TEMPFILE | grep -E "^\*" | cut -c 2- | while read LINE ; do printf "${YELLOW}%s${RESET}\n" "${LINE}"; done >> $TEMPSORTEDFILE
 cat $TEMPFILE | grep -vE "^\*" >> $TEMPSORTEDFILE
 SANITIZED=`cat $TEMPSORTEDFILE`
-SELECTED=`echo "$SANITIZED" | cut -d "|" -f1 | fzf`
+
+# this is ugly. adding RESET after each entry since the cut removes RESET at the end of the whole line
+# this should we reworked so we make only the entry title yellow instead of the whole entry
+SELECTED=`echo "$SANITIZED" | cut -d "|" -f1 | while read LINE ; do printf "%s${RESET}\n" "${LINE}"; done | fzf --ansi`
 
 if [[ -z $SELECTED ]]; then
     exit 0
 fi
 
-RED='\033[0;31m'
-RESET='\033[0m'
 COLOREDCURLY=`printf "${RED}{}${RESET}"`
 URL=`echo "$SANITIZED" | grep -m 1 "^${SELECTED}|" | cut -d "|" -f2`
 
 while [[ $URL == *"{}"* ]]; do
     # color the first matching {} in red and ask for parameter input.
     COLOREDURL=`echo "$URL" | sed "0,/{}/s|{}|$COLOREDCURLY|"`
-    echo -e "$COLOREDURL" 
+    echo -e "$COLOREDURL"
     read -p "parameter: " PARAM
 
     # replace first occurence of '{}' with $PARAM
