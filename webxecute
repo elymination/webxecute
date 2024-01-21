@@ -25,22 +25,36 @@ if  [ ! -d $CONFIGDIR ] || [ ! -f $CONFIGFILE ]; then
     done
 fi
 
+# for some reason newlines are trimmed if not using a file in shell scripts?!
+TEMPFILE="/tmp/webxecute_sanitized" 
+TEMPSORTEDFILE="/tmp/webxecute_sorted"
+
 # skip # comments and empty lines
-TEMPFILE="/tmp/webxecute_sanitized" # for some reason newlines are trimmed if not using a file in shell scripts?!
 cat $CONFIGFILE | grep -vE "^#" | grep . > $TEMPFILE
 SANITIZED=`cat $TEMPFILE`
+
+if [[ -f $TEMPSORTEDFILE ]]; then
+    rm $TEMPSORTEDFILE
+fi
+
+touch $TEMPSORTEDFILE
+
+# sort by favorites first, with the leading * removed
+cat $TEMPFILE | grep -E "^\*" | cut -c 2- >> $TEMPSORTEDFILE
+cat $TEMPFILE | grep -vE "^\*" >> $TEMPSORTEDFILE
+SANITIZED=`cat $TEMPSORTEDFILE`
 SELECTED=`echo "$SANITIZED" | cut -d "|" -f1 | fzf`
 
 if [[ -z $SELECTED ]]; then
     exit 0
 fi
+
 RED='\033[0;31m'
 RESET='\033[0m'
 COLOREDCURLY=`printf "${RED}{}${RESET}"`
 URL=`echo "$SANITIZED" | grep -m 1 "^${SELECTED}|" | cut -d "|" -f2`
 
 while [[ $URL == *"{}"* ]]; do
-
     # color the first matching {} in red and ask for parameter input.
     COLOREDURL=`echo "$URL" | sed "0,/{}/s|{}|$COLOREDCURLY|"`
     echo -e "$COLOREDURL" 
