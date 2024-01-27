@@ -5,11 +5,11 @@ CONFIGFILE="${CONFIGDIR}/config"
 
 if  [ ! -d $CONFIGDIR ] || [ ! -f $CONFIGFILE ]; then
     while true; do
-    read -p  "You do not have any config file. Do you want to generate the default one? [y/n]." yn
+    read -p  "You do not have any config file. Do you want to generate the default one? [y/n]" yn
     case $yn in
         [Yy]* )
-            if [ ! -d $CONFIGDIG ]; then
-                mkdir $CONFIGDIR;
+            if [ ! -d "$CONFIGDIG" ]; then
+                mkdir $CONFIGDIR
             fi
             touch $CONFIGFILE
             echo "# Syntax is 'name|url'" >> $CONFIGFILE
